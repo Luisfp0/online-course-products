@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Product } from "@/types/product";
+import { CreateProductDTO, Product, UpdateProductDTO } from "@/types/product";
 import { productService } from "@/services/products";
 
 interface ProductsState {
@@ -11,10 +11,18 @@ interface ProductsState {
   currentPage: number;
   searchTerm: string;
   sortField: "title" | "brand" | "";
+  isModalOpen: boolean;
+  selectedProduct: Product | null;
   fetchProducts: (page?: number) => Promise<void>;
-  searchProducts: (_term: string) => void;
-  sortProducts: (_field: "title" | "brand") => void;
+  searchProducts: (term: string) => void;
+  sortProducts: (field: "title" | "brand") => void;
+  createProduct: (product: CreateProductDTO) => Promise<void>;
+  updateProduct: (id: number, product: UpdateProductDTO) => Promise<void>;
+  deleteProduct: (id: number) => Promise<void>;
+  setModalOpen: (open: boolean) => void;
+  setSelectedProduct: (product: Product | null) => void;
 }
+
 
 export const useProducts = create<ProductsState>((set, get) => ({
   products: [],
@@ -25,6 +33,8 @@ export const useProducts = create<ProductsState>((set, get) => ({
   currentPage: 1,
   searchTerm: "",
   sortField: "",
+  isModalOpen: false,
+  selectedProduct: null,
 
   fetchProducts: async (page = 1) => {
     set({ loading: true });
@@ -79,6 +89,45 @@ export const useProducts = create<ProductsState>((set, get) => ({
       };
     });
   },
+
+  createProduct: async (product: CreateProductDTO) => {
+    set({ loading: true });
+    try {
+      await productService.create(product);
+      await get().fetchProducts();
+    } catch (error) {
+      set({ error: "Erro ao criar produto" });
+    } finally {
+      set({ loading: false, isModalOpen: false });
+    }
+  },
+
+  updateProduct: async (id: number, product: UpdateProductDTO) => {
+    set({ loading: true });
+    try {
+      await productService.update(id, product);
+      await get().fetchProducts();
+    } catch (error) {
+      set({ error: "Erro ao atualizar produto" });
+    } finally {
+      set({ loading: false, isModalOpen: false, selectedProduct: null });
+    }
+  },
+
+  deleteProduct: async (id) => {
+    set({ loading: true });
+    try {
+      await productService.delete(id);
+      await get().fetchProducts();
+    } catch (error) {
+      set({ error: "Erro ao deletar produto" });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  setModalOpen: (open) => set({ isModalOpen: open }),
+  setSelectedProduct: (product) => set({ selectedProduct: product }),
 }));
 
 function filterAndSortProducts(
