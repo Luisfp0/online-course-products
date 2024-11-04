@@ -1,3 +1,13 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": [
+    "next/core-web-vitals",
+    "eslint:recommended"
+  ],
+  "rules": {
+    "no-console": "error",
+    "no-warning-comments": ["error", { "terms": ["todo", "fixme", "@todo", "@fixme"], "location": "anywhere" }],
+    "multiline-comment-style": ["error", "starred-block"],
+    "no-inline-comments": "error",
+    "line-comment-position": ["error", { "position": "above" }]
+  }
 }
