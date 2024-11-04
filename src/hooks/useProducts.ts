@@ -5,15 +5,17 @@ import { productService } from "@/services/products";
 interface ProductsState {
   products: Product[];
   filteredProducts: Product[];
+  allProducts: Product[];
   loading: boolean;
   error: string | null;
   totalPages: number;
   currentPage: number;
   searchTerm: string;
-  sortField: "title" | "brand" | "";
+  sortField: "title" | "brand" | null;
   isModalOpen: boolean;
   selectedProduct: Product | null;
-  fetchProducts: (page?: number) => Promise<void>;
+  totalItems: number;
+  fetchAllProducts: () => Promise<void>;
   searchProducts: (term: string) => void;
   sortProducts: (field: "title" | "brand") => void;
   createProduct: (product: CreateProductDTO) => Promise<void>;
@@ -21,80 +23,101 @@ interface ProductsState {
   deleteProduct: (id: number) => Promise<void>;
   setModalOpen: (open: boolean) => void;
   setSelectedProduct: (product: Product | null) => void;
+  applyFilters: () => void;
+  changePage: (page: number) => void;
 }
-
 
 export const useProducts = create<ProductsState>((set, get) => ({
   products: [],
   filteredProducts: [],
+  allProducts: [],
   loading: false,
   error: null,
   totalPages: 0,
   currentPage: 1,
   searchTerm: "",
-  sortField: "",
+  sortField: null,
   isModalOpen: false,
   selectedProduct: null,
+  totalItems: 0,
 
-  fetchProducts: async (page = 1) => {
+  fetchAllProducts: async () => {
     set({ loading: true });
     try {
-      const response = await productService.list(page);
-      const products = response.data.products;
+      const initialResponse = await productService.list(1, 1);
+      const totalItems = initialResponse.data.total;
 
-      set((state) => {
-        const filtered = filterAndSortProducts(
-          products,
-          state.searchTerm,
-          state.sortField
-        );
-        return {
-          products,
-          filteredProducts: filtered,
-          totalPages: Math.ceil(response.data.total / 10),
-          currentPage: page,
-          error: null,
-          loading: false,
-        };
+      const response = await productService.list(1, totalItems);
+
+      set({
+        allProducts: response.data.products,
+        totalItems,
+        loading: false,
       });
+      get().applyFilters();
     } catch (error) {
-      set({ error: "Erro ao carregar produtos", loading: false });
+      set({
+        error: "Erro ao carregar produtos",
+        loading: false,
+      });
     }
   },
 
-  searchProducts: (term: string) => {
-    set((state) => {
-      const filtered = filterAndSortProducts(
-        state.products,
-        term,
-        state.sortField
+  applyFilters: () => {
+    const { allProducts, searchTerm, sortField, currentPage } = get();
+    let filtered = [...allProducts];
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (product) =>
+          product?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+          false ||
+          product?.brand?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+          false
       );
-      return {
-        searchTerm: term,
-        filteredProducts: filtered,
-      };
+    }
+
+    if (sortField) {
+      filtered.sort((a, b) => {
+        const aValue = a[sortField]?.toLowerCase() || "";
+        const bValue = b[sortField]?.toLowerCase() || "";
+        return aValue > bValue ? 1 : -1;
+      });
+    }
+
+    const totalPages = Math.ceil(filtered.length / 9);
+
+    const start = (currentPage - 1) * 9;
+    const end = start + 9;
+    const paginatedProducts = filtered.slice(start, end);
+
+    set({
+      filteredProducts: paginatedProducts,
+      totalPages,
+      products: paginatedProducts,
     });
   },
 
+  searchProducts: (term: string) => {
+    set({ searchTerm: term, currentPage: 1 });
+    get().applyFilters();
+  },
+
   sortProducts: (field: "title" | "brand") => {
-    set((state) => {
-      const filtered = filterAndSortProducts(
-        state.products,
-        state.searchTerm,
-        field
-      );
-      return {
-        sortField: field,
-        filteredProducts: filtered,
-      };
-    });
+    set({ sortField: field });
+    get().applyFilters();
+  },
+
+  changePage: (page: number) => {
+    set({ currentPage: page });
+    get().applyFilters();
   },
 
   createProduct: async (product: CreateProductDTO) => {
     set({ loading: true });
     try {
       await productService.create(product);
-      await get().fetchProducts();
+      await get().fetchAllProducts();
     } catch (error) {
       set({ error: "Erro ao criar produto" });
     } finally {
@@ -106,7 +129,7 @@ export const useProducts = create<ProductsState>((set, get) => ({
     set({ loading: true });
     try {
       await productService.update(id, product);
-      await get().fetchProducts();
+      await get().fetchAllProducts();
     } catch (error) {
       set({ error: "Erro ao atualizar produto" });
     } finally {
@@ -118,7 +141,7 @@ export const useProducts = create<ProductsState>((set, get) => ({
     set({ loading: true });
     try {
       await productService.delete(id);
-      await get().fetchProducts();
+      await get().fetchAllProducts();
     } catch (error) {
       set({ error: "Erro ao deletar produto" });
     } finally {
@@ -129,27 +152,3 @@ export const useProducts = create<ProductsState>((set, get) => ({
   setModalOpen: (open) => set({ isModalOpen: open }),
   setSelectedProduct: (product) => set({ selectedProduct: product }),
 }));
-
-function filterAndSortProducts(
-  products: Product[],
-  searchTerm: string,
-  sortField: "title" | "brand" | ""
-): Product[] {
-  let filtered = [...products];
-
-  if (searchTerm) {
-    filtered = filtered.filter(
-      (product) =>
-        product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }
-
-  if (sortField) {
-    filtered.sort((a, b) =>
-      a[sortField].toLowerCase() > b[sortField].toLowerCase() ? 1 : -1
-    );
-  }
-
-  return filtered;
-}

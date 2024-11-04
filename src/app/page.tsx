@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect } from "react";
 import { useProducts } from "@/hooks/useProducts";
@@ -7,19 +7,21 @@ import { ProductHeader } from "@/components/ProductHeader";
 import { Pagination } from "@/components/Pagination";
 import { ProductModal } from "@/components/ProductModal";
 import { Product, CreateProductDTO, UpdateProductDTO } from "@/types/product";
+import { Loader } from "@/components/Loader";
 
 export default function Home() {
   const {
     filteredProducts,
     loading,
     error,
-    fetchProducts,
+    fetchAllProducts,
     searchProducts,
     sortProducts,
     searchTerm,
     currentPage,
     totalPages,
     isModalOpen,
+    changePage,
     selectedProduct,
     createProduct,
     updateProduct,
@@ -29,8 +31,8 @@ export default function Home() {
   } = useProducts();
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    fetchAllProducts();
+  }, [fetchAllProducts]);
 
   const handleSave = async (formData: CreateProductDTO) => {
     if (selectedProduct) {
@@ -52,7 +54,7 @@ export default function Home() {
   };
 
   if (loading) {
-    return <div>Carregando...</div>;
+    return <Loader />;
   }
 
   if (error) {
@@ -60,43 +62,42 @@ export default function Home() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50">
       <ProductHeader
         onSearch={searchProducts}
         onSort={sortProducts}
         searchTerm={searchTerm}
-        onNewProduct={() => {
-          setSelectedProduct(null);
-          setModalOpen(true);
-        }}
+        onNewProduct={() => setModalOpen(true)}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredProducts.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
+      <main className="container mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={fetchProducts}
-      />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={changePage}
+        />
 
-      <ProductModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setModalOpen(false);
-          setSelectedProduct(null);
-        }}
-        onSave={handleSave}
-        product={selectedProduct || undefined}
-      />
-    </main>
+        <ProductModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedProduct(null);
+          }}
+          onSave={handleSave}
+          product={selectedProduct || undefined}
+        />
+      </main>
+    </div>
   );
 }

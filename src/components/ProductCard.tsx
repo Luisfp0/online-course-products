@@ -9,8 +9,8 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="relative h-48 w-full">
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-[1.02] hover:shadow-xl flex flex-col min-h-[320px]">
+      <div className="relative h-48">
         <Image
           src={product.thumbnail}
           alt={product.title}
@@ -18,26 +18,39 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
           objectFit="cover"
           className="transition-transform hover:scale-105"
         />
+        {product.price && (
+          <div className="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-full">
+            <span className="text-green-600 font-semibold">
+              ${product.price.toFixed(2)}
+            </span>
+          </div>
+        )}
       </div>
-      <div className="p-4">
-        <h3 className="text-lg font-semibold mb-2">{product.title}</h3>
-        <p className="text-gray-600 text-sm mb-2">{product.brand}</p>
-        <p className="text-green-600 font-bold mb-2">
-          ${product.price.toFixed(2)}
+
+      <div className="p-4 flex flex-col justify-between flex-grow">
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold text-gray-800 line-clamp-1">
+            {product.title || <span className="invisible">Placeholder</span>}
+          </h3>
+          <p className="text-sm text-gray-600">
+            {product.brand || <span className="invisible">Placeholder</span>}
+          </p>
+        </div>
+
+        <p className="text-gray-600 text-sm line-clamp-2 overflow-hidden">
+          {product.description || <span className="invisible">Placeholder</span>}
         </p>
-        <p className="text-gray-500 text-sm mb-4 line-clamp-2">
-          {product.description}
-        </p>
-        <div className="flex justify-between">
+
+        <div className="pt-2 flex justify-end space-x-2">
           <button
             onClick={() => onEdit(product)}
-            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+            className="px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors duration-200"
           >
             Editar
           </button>
           <button
             onClick={() => onDelete(product.id)}
-            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+            className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200"
           >
             Excluir
           </button>
