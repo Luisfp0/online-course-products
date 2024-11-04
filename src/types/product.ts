@@ -15,3 +15,15 @@ export interface ProductsResponse {
   skip: number;
   limit: number;
 }
+
+export interface CreateProductDTO {
+  title: string;
+  description: string;
+  price: number;
+  brand: string;
+  category: string;
+  thumbnail?: string;
+  images?: string[];
+}
+
+export type UpdateProductDTO = Partial<CreateProductDTO>;

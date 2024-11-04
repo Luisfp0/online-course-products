@@ -1,5 +1,5 @@
 import { api } from './api';
-import { Product, ProductsResponse } from '@/types/product';
+import { Product, ProductsResponse, CreateProductDTO, UpdateProductDTO } from '@/types/product';
 
 export const productService = {
   list: async (page: number = 1, limit: number = 10) => {
@@ -11,11 +11,15 @@ export const productService = {
     return api.get<Product>(`/products/${id}`);
   },
 
-  create: async (product: Omit<Product, 'id'>) => {
-    return api.post<Product>('/products/add', product);
+  create: async (product: CreateProductDTO) => {
+    return api.post<Product>('/products/add', {
+      ...product,
+      thumbnail: 'https://placeholder.com/150',
+      images: []
+    });
   },
 
-  update: async (id: number, product: Partial<Product>) => {
+  update: async (id: number, product: UpdateProductDTO) => {
     return api.put<Product>(`/products/${id}`, product);
   },
 
