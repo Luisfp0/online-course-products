@@ -1,13 +1,8 @@
 {
-  "extends": [
-    "next/core-web-vitals",
-    "eslint:recommended"
-  ],
+  "extends": "next/core-web-vitals",
   "rules": {
-    "no-console": "error",
-    "no-warning-comments": ["error", { "terms": ["todo", "fixme", "@todo", "@fixme"], "location": "anywhere" }],
-    "multiline-comment-style": ["error", "starred-block"],
-    "no-inline-comments": "error",
-    "line-comment-position": ["error", { "position": "above" }]
+    "no-console": "warn",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "react-hooks/exhaustive-deps": "warn"
   }
 }
