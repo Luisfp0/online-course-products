@@ -13,13 +13,13 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
   const fallbackImage = "https://placehold.co/400x300";
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-[1.02] hover:shadow-xl flex flex-col min-h-[400px] sm:min-h-[500px] md:min-h-[600px] w-full">
-      <div className="relative h-48 sm:h-56 md:h-64 lg:h-72 w-full overflow-hidden">
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-[1.02] hover:shadow-xl flex flex-col min-h-[650px] sm:min-h-[550px] md:min-h-[650px] w-full">
+      <div className="relative h-2/3 w-full overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src={imageError ? fallbackImage : product.thumbnail}
             alt={product.title}
-            className="transition-transform hover:scale-105 object-cover object-center w-full h-full"
+            className="transition-transform hover:scale-105 object-cover  w-full h-full"
             onError={() => setImageError(true)}
             priority={true}
             width={500}
