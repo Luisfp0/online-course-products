@@ -98,7 +98,7 @@ export default function LoginPage() {
               priority
             />
             <h1 className="mt-4 text-4xl font-bold text-[#283CFA]">
-              Online<span className="text-[#55DBAB]">Course</span>Products
+              Online<span className="text-[#55DBAB]">Products</span>Management
             </h1>
             <h3 className="mt-2 text-xl">
               Affordable and quality products here.

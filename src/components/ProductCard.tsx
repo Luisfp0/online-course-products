@@ -43,7 +43,7 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
           </h3>
           <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-xs sm:text-sm text-gray-600">
             <p className="line-clamp-1">
-              {product.brand || <span className="invisible">Placeholder</span>}
+              {product.brand || <span className="invisible"></span>}
             </p>
             <span className="hidden sm:block">•</span>
             <p className="line-clamp-1">
