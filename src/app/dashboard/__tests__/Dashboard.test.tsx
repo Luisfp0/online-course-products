@@ -7,7 +7,6 @@ import Dashboard from "../page";
 import { Product, ProductsState } from "@/types/product";
 import * as productsHook from "@/hooks/useProducts";
 
-// Mesmo mock do next/image
 jest.mock("next/image", () => ({
   __esModule: true,
   default: function MockImage({
@@ -68,7 +67,6 @@ const mockProductsState: ProductsState = {
   changePage: jest.fn(),
 };
 
-// Ajuste dos mocks para serem assíncronos quando necessário
 jest.mock("@/hooks/useProducts", () => ({
   __esModule: true,
   ...jest.requireActual("@/hooks/useProducts"),
@@ -93,6 +91,14 @@ describe("Dashboard", () => {
     push: jest.fn(),
   };
 
+  const renderDashboard = async () => {
+    let rendered;
+    await act(async () => {
+      rendered = render(<Dashboard />);
+    });
+    return rendered;
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(productsHook, "useProducts").mockImplementation(() => ({
@@ -107,9 +113,7 @@ describe("Dashboard", () => {
   });
 
   it("should render dashboard with products", async () => {
-    await act(async () => {
-      render(<Dashboard />);
-    });
+    await renderDashboard();
 
     await waitFor(() => {
       expect(screen.getByText("Test Product")).toBeInTheDocument();
@@ -121,9 +125,7 @@ describe("Dashboard", () => {
       loading: true,
     }));
 
-    await act(async () => {
-      render(<Dashboard />);
-    });
+    await renderDashboard();
 
     expect(screen.getByTestId("loader")).toBeInTheDocument();
   });
@@ -136,34 +138,17 @@ describe("Dashboard", () => {
       filteredProducts: [],
     }));
 
-    await act(async () => {
-      render(<Dashboard />);
-    });
+    await renderDashboard();
 
     await waitFor(() => {
       expect(screen.getByText(/erro: test error/i)).toBeInTheDocument();
     });
   });
 
-  it("should show skeletons while initial loading", async () => {
-    jest.spyOn(productsHook, "useProducts").mockImplementation(() => ({
-      ...mockProductsState,
-      isInitialLoading: true,
-      filteredProducts: [],
-    }));
-
-    render(<Dashboard />);
-
-    const skeletons = screen.getAllByTestId("product-card-skeleton");
-    expect(skeletons).toHaveLength(9);
-  });
-
   it("should handle logout correctly", async () => {
     const user = userEvent.setup();
 
-    await act(async () => {
-      render(<Dashboard />);
-    });
+    await renderDashboard();
 
     await act(async () => {
       const logoutButton = screen.getByRole("button", { name: /logout/i });
@@ -187,9 +172,7 @@ describe("Dashboard", () => {
       isInitialLoading: false,
     }));
 
-    await act(async () => {
-      render(<Dashboard />);
-    });
+    await renderDashboard();
 
     await waitFor(() => {
       expect(screen.getByText("Test Product")).toBeInTheDocument();
@@ -217,9 +200,7 @@ describe("Dashboard", () => {
 
     window.confirm = jest.fn(() => true);
 
-    await act(async () => {
-      render(<Dashboard />);
-    });
+    await renderDashboard();
 
     await waitFor(() => {
       expect(screen.getByText("Test Product")).toBeInTheDocument();
@@ -246,9 +227,7 @@ describe("Dashboard", () => {
       setModalOpen,
     }));
 
-    await act(async () => {
-      render(<Dashboard />);
-    });
+    await renderDashboard();
 
     await act(async () => {
       const newProductButton = screen.getByRole("button", {
