@@ -12,6 +12,16 @@ jest.mock("../api", () => ({
 }));
 
 describe("ProductService", () => {
+  let consoleErrorSpy: jest.SpyInstance;
+
+  beforeAll(() => {
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterAll(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -84,12 +94,15 @@ describe("ProductService", () => {
 
       const result = await productService.create(newProduct);
       expect(result.data).toMatchObject(mockResponse.data);
-      expect(api.post).toHaveBeenCalledWith("/products/add", expect.objectContaining({
-        ...newProduct,
-        stock: 100,
-        discountPercentage: 0,
-        rating: 5,
-      }));
+      expect(api.post).toHaveBeenCalledWith(
+        "/products/add",
+        expect.objectContaining({
+          ...newProduct,
+          stock: 100,
+          discountPercentage: 0,
+          rating: 5,
+        })
+      );
     });
 
     it("should throw error when create fails", async () => {
@@ -103,7 +116,9 @@ describe("ProductService", () => {
 
       (api.post as jest.Mock).mockRejectedValueOnce(new Error("API Error"));
 
-      await expect(productService.create(newProduct)).rejects.toThrow("API Error");
+      await expect(productService.create(newProduct)).rejects.toThrow(
+        "API Error"
+      );
     });
 
     it("should throw error when response has no data", async () => {
