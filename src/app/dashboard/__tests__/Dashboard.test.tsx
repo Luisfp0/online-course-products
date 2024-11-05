@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useProducts } from "@/hooks/useProducts";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,6 +6,29 @@ import { useRouter } from "next/navigation";
 import Dashboard from "../page";
 import { Product, ProductsState } from "@/types/product";
 import * as productsHook from "@/hooks/useProducts";
+
+// Mesmo mock do next/image
+jest.mock("next/image", () => ({
+  __esModule: true,
+  default: function MockImage({
+    src,
+    alt,
+    className,
+    priority,
+    width,
+    height,
+  }: any) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        className={className}
+        width={width}
+        height={height}
+      />
+    );
+  },
+}));
 
 const mockProducts: Product[] = [
   {
@@ -33,7 +56,7 @@ const mockProductsState: ProductsState = {
   isModalOpen: false,
   selectedProduct: null,
   totalItems: 0,
-  fetchAllProducts: jest.fn(),
+  fetchAllProducts: jest.fn().mockImplementation(() => Promise.resolve()),
   searchProducts: jest.fn(),
   sortProducts: jest.fn(),
   createProduct: jest.fn(),
@@ -45,13 +68,22 @@ const mockProductsState: ProductsState = {
   changePage: jest.fn(),
 };
 
+// Ajuste dos mocks para serem assíncronos quando necessário
 jest.mock("@/hooks/useProducts", () => ({
   __esModule: true,
   ...jest.requireActual("@/hooks/useProducts"),
-  useProducts: () => mockProductsState,
+  useProducts: jest.fn().mockImplementation(() => ({
+    ...mockProductsState,
+    fetchAllProducts: jest.fn().mockImplementation(() => Promise.resolve()),
+  })),
 }));
 
-jest.mock("@/hooks/useAuth");
+jest.mock("@/hooks/useAuth", () => ({
+  useAuth: jest.fn(() => ({
+    loading: false,
+  })),
+}));
+
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
 }));
@@ -66,6 +98,7 @@ describe("Dashboard", () => {
     jest.spyOn(productsHook, "useProducts").mockImplementation(() => ({
       ...mockProductsState,
       filteredProducts: mockProducts,
+      fetchAllProducts: jest.fn().mockImplementation(() => Promise.resolve()),
     }));
     (useRouter as jest.Mock).mockImplementation(() => mockRouter);
     (useAuth as jest.Mock).mockImplementation(() => ({
@@ -74,23 +107,28 @@ describe("Dashboard", () => {
   });
 
   it("should render dashboard with products", async () => {
-    render(<Dashboard />);
+    await act(async () => {
+      render(<Dashboard />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Test Product")).toBeInTheDocument();
     });
   });
 
-  it("should show loader when auth is loading", () => {
+  it("should show loader when auth is loading", async () => {
     (useAuth as jest.Mock).mockImplementation(() => ({
       loading: true,
     }));
 
-    render(<Dashboard />);
+    await act(async () => {
+      render(<Dashboard />);
+    });
+
     expect(screen.getByTestId("loader")).toBeInTheDocument();
   });
 
-  it("should show error message when there is an error", () => {
+  it("should show error message when there is an error", async () => {
     jest.spyOn(productsHook, "useProducts").mockImplementation(() => ({
       ...mockProductsState,
       error: "Test error",
@@ -98,22 +136,39 @@ describe("Dashboard", () => {
       filteredProducts: [],
     }));
 
-    render(<Dashboard />);
-    expect(screen.getByText(/erro: test error/i)).toBeInTheDocument();
+    await act(async () => {
+      render(<Dashboard />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/erro: test error/i)).toBeInTheDocument();
+    });
   });
 
-  it("should show skeletons while initial loading", () => {
+  it("should show skeletons while initial loading", async () => {
+    jest.spyOn(productsHook, "useProducts").mockImplementation(() => ({
+      ...mockProductsState,
+      isInitialLoading: true,
+      filteredProducts: [],
+    }));
+
     render(<Dashboard />);
+
     const skeletons = screen.getAllByTestId("product-card-skeleton");
     expect(skeletons).toHaveLength(9);
   });
 
   it("should handle logout correctly", async () => {
     const user = userEvent.setup();
-    render(<Dashboard />);
 
-    const logoutButton = screen.getByRole("button", { name: /logout/i });
-    await user.click(logoutButton);
+    await act(async () => {
+      render(<Dashboard />);
+    });
+
+    await act(async () => {
+      const logoutButton = screen.getByRole("button", { name: /logout/i });
+      await user.click(logoutButton);
+    });
 
     expect(localStorage.removeItem).toHaveBeenCalledWith("isAuthenticated");
     expect(mockRouter.push).toHaveBeenCalledWith("/");
@@ -132,14 +187,18 @@ describe("Dashboard", () => {
       isInitialLoading: false,
     }));
 
-    render(<Dashboard />);
+    await act(async () => {
+      render(<Dashboard />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Test Product")).toBeInTheDocument();
     });
 
-    const editButton = screen.getByTestId("edit-button");
-    await user.click(editButton);
+    await act(async () => {
+      const editButton = screen.getByTestId("edit-button");
+      await user.click(editButton);
+    });
 
     expect(setSelectedProduct).toHaveBeenCalledWith(mockProducts[0]);
     expect(setModalOpen).toHaveBeenCalledWith(true);
@@ -158,14 +217,18 @@ describe("Dashboard", () => {
 
     window.confirm = jest.fn(() => true);
 
-    render(<Dashboard />);
+    await act(async () => {
+      render(<Dashboard />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Test Product")).toBeInTheDocument();
     });
 
-    const deleteButton = screen.getByTestId("delete-button");
-    await user.click(deleteButton);
+    await act(async () => {
+      const deleteButton = screen.getByTestId("delete-button");
+      await user.click(deleteButton);
+    });
 
     expect(window.confirm).toHaveBeenCalledWith(
       "Are you sure you want to delete this product?"
@@ -183,12 +246,16 @@ describe("Dashboard", () => {
       setModalOpen,
     }));
 
-    render(<Dashboard />);
-
-    const newProductButton = screen.getByRole("button", {
-      name: /new product/i,
+    await act(async () => {
+      render(<Dashboard />);
     });
-    await user.click(newProductButton);
+
+    await act(async () => {
+      const newProductButton = screen.getByRole("button", {
+        name: /new product/i,
+      });
+      await user.click(newProductButton);
+    });
 
     expect(setModalOpen).toHaveBeenCalledWith(true);
   });

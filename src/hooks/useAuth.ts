@@ -7,16 +7,24 @@ export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const authStatus = localStorage.getItem("isAuthenticated");
+    const checkAuth = async () => {
+      try {
+        const authStatus = localStorage.getItem("isAuthenticated");
 
-      if (authStatus) {
-        setIsAuthenticated(true);
-        router.push("/dashboard");
-      } else {
-        router.push("/");
+        if (authStatus === "true") {
+          setIsAuthenticated(true);
+          await router.push("/dashboard");
+        } else {
+          setIsAuthenticated(false);
+          await router.push("/");
+        }
+      } catch (error) {
+        console.error("Auth error:", error);
+        setIsAuthenticated(false);
+        await router.push("/");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkAuth();

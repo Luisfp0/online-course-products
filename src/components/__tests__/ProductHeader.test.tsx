@@ -8,6 +8,7 @@ describe("ProductHeader", () => {
     onSort: jest.fn(),
     searchTerm: "",
     onNewProduct: jest.fn(),
+    handleLogout: jest.fn()
   };
 
   beforeEach(() => {

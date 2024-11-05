@@ -64,9 +64,7 @@ export default function LoginPage() {
     setUsername(e.target.value);
     if (usernameError) {
       setUsernameError(false);
-      setFormError((prev) =>
-        prev.replace("Username is required. ", "")
-      );
+      setFormError((prev) => prev.replace("Username is required. ", ""));
     }
   };
 
