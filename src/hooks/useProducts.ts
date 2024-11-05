@@ -45,9 +45,15 @@ export const useProducts = create<ProductsState>((set, get) => ({
     set({ loading: true });
     try {
       const initialResponse = await productService.list(1, 1);
+      if (!initialResponse || !initialResponse.data) {
+        throw new Error("Resposta inesperada da API");
+      }
       const totalItems = initialResponse.data.total;
 
       const response = await productService.list(1, totalItems);
+      if (!response || !response.data) {
+        throw new Error("Resposta inesperada da API");
+      }
 
       set({
         allProducts: response.data.products,
@@ -55,11 +61,19 @@ export const useProducts = create<ProductsState>((set, get) => ({
         loading: false,
       });
       get().applyFilters();
-    } catch (error) {
-      set({
-        error: "Erro ao carregar produtos",
-        loading: false,
-      });
+    } catch (error: unknown) {
+      console.error("Erro ao carregar produtos:", error);
+      if (error instanceof Error) {
+        set({
+          error: error.message,
+          loading: false,
+        });
+      } else {
+        set({
+          error: "Erro ao carregar produtos",
+          loading: false,
+        });
+      }
     }
   },
 

@@ -19,7 +19,9 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
           src={imageError ? fallbackImage : product.thumbnail}
           alt={product.title}
           layout="fill"
-          objectFit="cover"
+          style={{
+            objectFit: "cover",
+          }}
           className="transition-transform hover:scale-105"
           onError={() => setImageError(true)}
         />
@@ -43,7 +45,9 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
         </div>
 
         <p className="text-gray-600 text-sm line-clamp-2 overflow-hidden">
-          {product.description || <span className="invisible">Placeholder</span>}
+          {product.description || (
+            <span className="invisible">Placeholder</span>
+          )}
         </p>
 
         <div className="pt-2 flex justify-end space-x-2">
@@ -57,7 +61,7 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
             onClick={() => onDelete(product.id)}
             className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200"
           >
-            Excluir
+            Delete
           </button>
         </div>
       </div>

@@ -56,7 +56,7 @@ export default function Home() {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm("Tem certeza que deseja excluir este produto?")) {
+    if (window.confirm("Are you sure you want to delete this product?")) {
       await deleteProduct(id);
     }
   };
