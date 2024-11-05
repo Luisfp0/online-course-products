@@ -1,6 +1,6 @@
 export function ProductCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden animate-pulse">
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden animate-pulse" data-testid="product-card-skeleton">
       <div className="h-48 bg-gray-200" />
       <div className="p-4 space-y-4">
         <div className="space-y-2">
