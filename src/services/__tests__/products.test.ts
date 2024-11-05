@@ -1,6 +1,5 @@
 import { productService } from "../products";
 import { api } from "../api";
-import { Product } from "@/types/product";
 
 jest.mock("../api", () => ({
   api: {

@@ -42,6 +42,9 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
           <p className="text-sm text-gray-600">
             {product.brand || <span className="invisible">Placeholder</span>}
           </p>
+          <p className="text-sm text-gray-600">
+            {product.category || <span className="invisible">Placeholder</span>}
+          </p>
         </div>
 
         <p className="text-gray-600 text-sm line-clamp-2 overflow-hidden">
