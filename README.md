@@ -1,6 +1,6 @@
-# Online Course Products Management System
+# Online Products Management System
 
-A modern web application for managing online course products, built with Next.js, React, and TypeScript. This application provides a complete interface for authentication and product management with features like sorting, searching, pagination, and CRUD operations.
+A modern web application for managing online products, built with Next.js, React, and TypeScript. This application provides a complete interface for authentication and product management with features like sorting, searching, pagination, and CRUD operations.
 
 ## 🚀 Features
 
