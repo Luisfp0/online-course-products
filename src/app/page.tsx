@@ -1,115 +1,175 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useProducts } from "@/hooks/useProducts";
-import { ProductCard } from "@/components/ProductCard";
-import { ProductHeader } from "@/components/ProductHeader";
-import { Pagination } from "@/components/Pagination";
-import { ProductModal } from "@/components/ProductModal";
-import { Product, CreateProductDTO, UpdateProductDTO } from "@/types/product";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useAuth } from "@/hooks/useAuth";
 import { Loader } from "@/components/Loader";
-import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
 
-export default function Home() {
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+export default function LoginPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [usernameError, setUsernameError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
+  const router = useRouter();
 
-  const {
-    filteredProducts,
-    loading,
-    error,
-    fetchAllProducts,
-    searchProducts,
-    sortProducts,
-    searchTerm,
-    currentPage,
-    totalPages,
-    isModalOpen,
-    changePage,
-    selectedProduct,
-    createProduct,
-    updateProduct,
-    deleteProduct,
-    setModalOpen,
-    setSelectedProduct,
-  } = useProducts();
+  const { loading: authLoading, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const loadInitialData = async () => {
-      await fetchAllProducts();
-      setIsInitialLoading(false);
-    };
+    if (!authLoading && isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [authLoading, isAuthenticated, router]);
 
-    loadInitialData();
-  }, [fetchAllProducts]);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-  const handleSave = async (formData: CreateProductDTO) => {
-    if (selectedProduct) {
-      await updateProduct(selectedProduct.id, formData as UpdateProductDTO);
+    setFormError("");
+    setUsernameError(false);
+    setPasswordError(false);
+
+    let hasError = false;
+
+    if (username.trim() === "") {
+      setFormError((prev) => prev + "Username is required. ");
+      setUsernameError(true);
+      hasError = true;
+    }
+
+    if (password.trim() === "") {
+      setFormError((prev) => prev + "Password is required. ");
+      setPasswordError(true);
+      hasError = true;
+    }
+
+    if (hasError) {
+      setLoading(false);
+      return;
+    }
+
+    if (username === "admin" && password === "password") {
+      localStorage.setItem("isAuthenticated", "true");
+      router.push("/dashboard");
     } else {
-      await createProduct(formData);
+      setFormError("Invalid credentials. Please try again.");
+    }
+
+    setLoading(false);
+  };
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value);
+    if (usernameError) {
+      setUsernameError(false);
+      setFormError((prev) =>
+        prev.replace("Username is required. ", "")
+      );
     }
   };
 
-  const handleEdit = (product: Product) => {
-    setSelectedProduct(product);
-    setModalOpen(true);
-  };
-
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      await deleteProduct(id);
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    if (passwordError) {
+      setPasswordError(false);
+      setFormError((prev) => prev.replace("Password is required. ", ""));
     }
   };
 
-  if (error) {
-    return <div>Erro: {error}</div>;
+  if (authLoading) {
+    return <Loader />;
+  }
+
+  if (isAuthenticated) {
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {loading && !isInitialLoading && <Loader />}
-      
-      <ProductHeader
-        onSearch={searchProducts}
-        onSort={sortProducts}
-        searchTerm={searchTerm}
-        onNewProduct={() => setModalOpen(true)}
-      />
-
-      <main className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {isInitialLoading ? (
-            Array.from({ length: 9 }).map((_, index) => (
-              <ProductCardSkeleton key={index} />
-            ))
-          ) : (
-            filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            ))
-          )}
+    <div className="flex items-center justify-center h-screen bg-white">
+      <div className="flex flex-col md:flex-row w-full h-full">
+        <div className="flex flex-col items-center justify-center w-full md:w-4/5 bg-blue-500 text-white p-8">
+          <div className="text-center">
+            <Image
+              src="/logo_image.webp"
+              width={250}
+              height={250}
+              className="rounded-lg mx-auto"
+              alt="logo"
+              priority
+            />
+            <h1 className="mt-4 text-4xl font-bold text-[#283CFA]">
+              Online<span className="text-[#55DBAB]">Course</span>Products
+            </h1>
+            <h3 className="mt-2 text-xl">
+              Affordable and quality products here.
+            </h3>
+          </div>
         </div>
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={changePage}
-        />
-
-        <ProductModal
-          isOpen={isModalOpen}
-          onClose={() => {
-            setModalOpen(false);
-            setSelectedProduct(null);
-          }}
-          onSave={handleSave}
-          product={selectedProduct || undefined}
-        />
-      </main>
+        <div className="flex items-center justify-center w-full md:w-3/5 p-8">
+          <div className="flex flex-col w-full max-w-sm text-black">
+            <h1 className="mb-8 text-lg font-semibold text-center md:text-left">
+              Enter your login credentials.
+            </h1>
+            <form onSubmit={handleLogin}>
+              <div className="flex flex-col mb-4">
+                <label htmlFor="username" className="mb-2">
+                  Username:
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  className={`px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                    usernameError
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-300 focus:ring-blue-500"
+                  }`}
+                  value={username}
+                  onChange={handleUsernameChange}
+                />
+              </div>
+              <div className="flex flex-col mb-6">
+                <label htmlFor="password" className="mb-2">
+                  Password:
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  className={`px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                    passwordError
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-300 focus:ring-blue-500"
+                  }`}
+                  value={password}
+                  onChange={handlePasswordChange}
+                />
+              </div>
+              <button
+                className="w-full px-3 py-2 text-white bg-green-500 rounded-md hover:bg-green-600"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? "Logging in..." : "Login"}
+              </button>
+              <p></p>
+              {formError ? (
+                <div className="h-4">
+                  <p className="text-red-500 text-sm mt-4 text-center">
+                    {formError}
+                  </p>
+                </div>
+              ) : (
+                <div className="h-8"></div>
+              )}
+            </form>
+            <span className="mt-4 text-blue-500 underline cursor-pointer text-center md:text-left">
+              I forgot my password
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

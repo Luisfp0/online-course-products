@@ -6,6 +6,7 @@ interface ProductHeaderProps {
   onSort: (field: "title" | "brand") => void;
   searchTerm: string;
   onNewProduct: () => void;
+  handleLogout: () => void;
 }
 
 export function ProductHeader({
@@ -13,6 +14,7 @@ export function ProductHeader({
   onSort,
   searchTerm,
   onNewProduct,
+  handleLogout,
 }: ProductHeaderProps) {
   return (
     <div className="bg-white shadow-sm border-b sticky top-0 z-10">
@@ -64,6 +66,12 @@ export function ProductHeader({
               </select>
               <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-500" />
             </div>
+            <button
+              onClick={handleLogout}
+              className="px-6 py-2.5 bg-red-500 text-white rounded-md hover:bg-red-600"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>

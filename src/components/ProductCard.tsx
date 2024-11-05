@@ -14,16 +14,18 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-[1.02] hover:shadow-xl flex flex-col min-h-[320px]">
-      <div className="relative h-48">
+      <div className="relative h-[150px] w-full overflow-hidden">
         <Image
           src={imageError ? fallbackImage : product.thumbnail}
           alt={product.title}
-          layout="fill"
+          fill
           style={{
             objectFit: "cover",
           }}
           className="transition-transform hover:scale-105"
           onError={() => setImageError(true)}
+          priority
+          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
         />
         {product.price && (
           <div className="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-full">
@@ -64,7 +66,7 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
             onClick={() => onDelete(product.id)}
             className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200"
           >
-            Delete
+            Deletar
           </button>
         </div>
       </div>

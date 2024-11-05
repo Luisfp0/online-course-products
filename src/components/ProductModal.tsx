@@ -25,11 +25,11 @@ export function ProductModal({
   useEffect(() => {
     if (product) {
       setFormData({
-        title: product.title,
-        description: product.description,
+        title: product.title || "",
+        description: product.description || "",
         price: `$ ${product.price.toString()}`,
-        brand: product.brand,
-        category: product.category,
+        brand: product.brand || "",
+        category: product.category || "",
       });
     } else {
       setFormData({
