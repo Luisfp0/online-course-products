@@ -20,7 +20,7 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
           alt={product.title}
           className="transition-transform hover:scale-105"
           onError={() => setImageError(true)}
-          priority
+          priority={true}
           width={500}
           height={500}
           sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
@@ -58,13 +58,13 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
             onClick={() => onEdit(product)}
             className="px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors duration-200"
           >
-            Editar
+            Edit
           </button>
           <button
             onClick={() => onDelete(product.id)}
             className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200"
           >
-            Deletar
+            Delete
           </button>
         </div>
       </div>

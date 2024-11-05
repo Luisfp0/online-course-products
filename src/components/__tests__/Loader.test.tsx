@@ -5,7 +5,7 @@ import { ProductCardSkeleton } from "../ProductCardSkeleton";
 describe("Loader", () => {
   it("should render loader component", () => {
     const { container } = render(<Loader />);
-    expect(container.firstChild).toHaveClass("fixed inset-0");
+    expect(container.firstChild).toHaveClass("relative z-50 flex items-center justify-center");
   });
 });
 
