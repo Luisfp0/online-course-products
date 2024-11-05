@@ -71,9 +71,7 @@ export const useProducts = create<ProductsState>((set, get) => ({
       filtered = filtered.filter(
         (product) =>
           product?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
-          false ||
-          product?.brand?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
-          false
+          product?.brand?.toLowerCase()?.includes(searchTerm.toLowerCase())
       );
     }
 
@@ -114,36 +112,75 @@ export const useProducts = create<ProductsState>((set, get) => ({
   },
 
   createProduct: async (product: CreateProductDTO) => {
-    set({ loading: true });
+    set({ loading: true, error: null });
     try {
-      await productService.create(product);
-      await get().fetchAllProducts();
+      const response = await productService.create(product);
+      if (response.data) {
+        const { allProducts } = get();
+        set({
+          allProducts: [response.data, ...allProducts],
+          error: null,
+        });
+        get().applyFilters();
+      }
     } catch (error) {
-      set({ error: "Erro ao criar produto" });
+      set({ error: "Erro ao criar produto. Por favor, tente novamente." });
     } finally {
       set({ loading: false, isModalOpen: false });
     }
   },
 
   updateProduct: async (id: number, product: UpdateProductDTO) => {
-    set({ loading: true });
+    set({ loading: true, error: null });
     try {
-      await productService.update(id, product);
-      await get().fetchAllProducts();
+      const response = await productService.update(id, product);
+      if (response.data) {
+        const { allProducts } = get();
+        const updatedProducts = allProducts.map((p) =>
+          p.id === id
+            ? {
+                ...p,
+                ...response.data,
+                id,
+                thumbnail: p.thumbnail,
+              }
+            : p
+        );
+        set({
+          allProducts: updatedProducts,
+          error: null,
+        });
+        get().applyFilters();
+      }
     } catch (error) {
-      set({ error: "Erro ao atualizar produto" });
+      set({ error: "Erro ao atualizar produto. Por favor, tente novamente." });
     } finally {
       set({ loading: false, isModalOpen: false, selectedProduct: null });
     }
   },
 
-  deleteProduct: async (id) => {
-    set({ loading: true });
+  deleteProduct: async (id: number) => {
+    set({ loading: true, error: null });
     try {
       await productService.delete(id);
-      await get().fetchAllProducts();
+      const { allProducts } = get();
+      const filteredProducts = allProducts.filter((p) => p.id !== id);
+
+      set({
+        allProducts: filteredProducts,
+        error: null,
+      });
+
+      get().applyFilters();
     } catch (error) {
-      set({ error: "Erro ao deletar produto" });
+      const { allProducts } = get();
+      const filteredProducts = allProducts.filter((p) => p.id !== id);
+
+      set({
+        allProducts: filteredProducts,
+      });
+
+      get().applyFilters();
     } finally {
       set({ loading: false });
     }

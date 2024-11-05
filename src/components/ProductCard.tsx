@@ -1,5 +1,6 @@
 import { Product } from "@/types/product";
 import Image from "next/image";
+import { useState } from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -8,15 +9,19 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
+  const [imageError, setImageError] = useState(false);
+  const fallbackImage = "https://placehold.co/400x300";
+
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-[1.02] hover:shadow-xl flex flex-col min-h-[320px]">
       <div className="relative h-48">
         <Image
-          src={product.thumbnail}
+          src={imageError ? fallbackImage : product.thumbnail}
           alt={product.title}
           layout="fill"
           objectFit="cover"
           className="transition-transform hover:scale-105"
+          onError={() => setImageError(true)}
         />
         {product.price && (
           <div className="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-full">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CreateProductDTO, Product } from "@/types/product";
 
 interface ProductModalProps {
@@ -15,16 +15,55 @@ export function ProductModal({
   product,
 }: ProductModalProps) {
   const [formData, setFormData] = useState({
-    title: product?.title || "",
-    description: product?.description || "",
-    price: product?.price || 0,
-    brand: product?.brand || "",
-    category: product?.category || "",
+    title: "",
+    description: "",
+    price: "",
+    brand: "",
+    category: "",
   });
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        title: product.title,
+        description: product.description,
+        price: `$ ${product.price.toString()}`,
+        brand: product.brand,
+        category: product.category,
+      });
+    } else {
+      setFormData({
+        title: "",
+        description: "",
+        price: "",
+        brand: "",
+        category: "",
+      });
+    }
+  }, [product, isOpen]);
+
+  const handlePriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let value = event.target.value.replace(/\D/g, "");
+
+    if (value) {
+      value = (Number(value) / 100).toFixed(2);
+      value = `$ ${value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      price: value,
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    const price = parseFloat(formData.price.replace(/[^\d.]/g, "")) || 0;
+
+    onSave({
+      ...formData,
+      price,
+    });
     onClose();
   };
 
@@ -34,13 +73,13 @@ export function ProductModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center transition-opacity duration-300">
       <div className="bg-white p-6 rounded-lg shadow-lg transform transition-transform duration-300 scale-100 w-full max-w-lg">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          {product ? "Editar Produto" : "Novo Produto"}
+          {product ? "Edit Product" : "New Product"}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold mb-2 text-gray-700">
-              Título
+              Title
             </label>
             <input
               type="text"
@@ -48,23 +87,23 @@ export function ProductModal({
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              className="w-full p-3 border border-gray-300 rounded-lg text-black font-thin focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Digite o título do produto"
+              className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter product title"
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-semibold mb-2 text-gray-700">
-              Descrição
+              Description
             </label>
             <textarea
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
-              className="w-full p-3 border border-gray-300 rounded-lg text-black font-thin focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Descrição do produto"
+              className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Product description"
               rows={3}
               required
             />
@@ -72,23 +111,21 @@ export function ProductModal({
 
           <div>
             <label className="block text-sm font-semibold mb-2 text-gray-700">
-              Preço
+              Price
             </label>
             <input
-              type="number"
+              type="text"
               value={formData.price}
-              onChange={(e) =>
-                setFormData({ ...formData, price: Number(e.target.value) })
-              }
-              className="w-full p-3 border border-gray-300 rounded-lg text-black font-thin focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Preço do produto"
+              onChange={handlePriceChange}
+              className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="$ 0.00"
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-semibold mb-2 text-gray-700">
-              Marca
+              Brand
             </label>
             <input
               type="text"
@@ -96,8 +133,24 @@ export function ProductModal({
               onChange={(e) =>
                 setFormData({ ...formData, brand: e.target.value })
               }
-              className="w-full p-3 border border-gray-300 rounded-lg text-black font-thin focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Marca do produto"
+              className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter brand name"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
+              Category
+            </label>
+            <input
+              type="text"
+              value={formData.category}
+              onChange={(e) =>
+                setFormData({ ...formData, category: e.target.value })
+              }
+              className="w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter product category"
               required
             />
           </div>
@@ -106,15 +159,15 @@ export function ProductModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-black font-thin hover:bg-gray-200 transition-colors duration-200 font-semibold"
+              className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-semibold"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-black font-thin hover:bg-blue-700 transition-colors duration-200 font-semibold"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-semibold"
             >
-              Salvar
+              Save
             </button>
           </div>
         </form>

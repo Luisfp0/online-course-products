@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductHeader } from "@/components/ProductHeader";
@@ -8,8 +8,11 @@ import { Pagination } from "@/components/Pagination";
 import { ProductModal } from "@/components/ProductModal";
 import { Product, CreateProductDTO, UpdateProductDTO } from "@/types/product";
 import { Loader } from "@/components/Loader";
+import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
 
 export default function Home() {
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
   const {
     filteredProducts,
     loading,
@@ -31,7 +34,12 @@ export default function Home() {
   } = useProducts();
 
   useEffect(() => {
-    fetchAllProducts();
+    const loadInitialData = async () => {
+      await fetchAllProducts();
+      setIsInitialLoading(false);
+    };
+
+    loadInitialData();
   }, [fetchAllProducts]);
 
   const handleSave = async (formData: CreateProductDTO) => {
@@ -53,16 +61,14 @@ export default function Home() {
     }
   };
 
-  if (loading) {
-    return <Loader />;
-  }
-
   if (error) {
     return <div>Erro: {error}</div>;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {loading && !isInitialLoading && <Loader />}
+      
       <ProductHeader
         onSearch={searchProducts}
         onSort={sortProducts}
@@ -72,14 +78,20 @@ export default function Home() {
 
       <main className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
+          {isInitialLoading ? (
+            Array.from({ length: 9 }).map((_, index) => (
+              <ProductCardSkeleton key={index} />
+            ))
+          ) : (
+            filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))
+          )}
         </div>
 
         <Pagination
