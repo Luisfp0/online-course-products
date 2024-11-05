@@ -53,8 +53,6 @@ describe("useProducts", () => {
       await result.current.fetchAllProducts();
     });
 
-    console.log({result})
-
     await waitFor(() => {
       expect(result.current.allProducts).toEqual(mockProducts);
     });
